@@ -145,7 +145,8 @@ typedef enum {
 	STOP_Y,
 	MOVE_X,
 	MOVE_Y,
-	DONE
+	DONE,
+	REPEAT_A
 } State_t;
 State_t state = SYNC_CONTROLLER;
 
@@ -184,7 +185,7 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 			if (report_count > 100)
 			{
 				report_count = 0;
-				state = SYNC_POSITION;
+				state = REPEAT_A;
 			}
 			else if (report_count == 25 || report_count == 50)
 			{
@@ -192,6 +193,13 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 			}
 			else if (report_count == 75 || report_count == 100)
 			{
+				ReportData->Button |= SWITCH_A;
+			}
+			report_count++;
+			break;
+		case REPEAT_A:
+			if (report_count == 50 || report_count == 75) {
+				report_count = 0;
 				ReportData->Button |= SWITCH_A;
 			}
 			report_count++;
@@ -257,13 +265,7 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 			return;
 	}
 
-	// Inking
-	if (state != SYNC_CONTROLLER && state != SYNC_POSITION)
-		if (pgm_read_byte(&(image_data[(xpos / 8) + (ypos * 40)])) & 1 << (xpos % 8))
-			ReportData->Button |= SWITCH_A;
-
 	// Prepare to echo this report
 	memcpy(&last_report, ReportData, sizeof(USB_JoystickReport_Input_t));
 	echoes = ECHOES;
-
 }
