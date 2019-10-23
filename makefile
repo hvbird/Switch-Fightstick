@@ -11,8 +11,8 @@
 
 # Run "make help" for target help.
 
-# Set the MCU accordingly to your device (e.g. at90usb1286 for a Teensy 2.0++, or atmega16u2 for an Arduino UNO R3)
-MCU          = atmega16u2
+# Set the MCU accordingly to your device (e.g. at90usb1286 for a Teensy 2.0++, or atmega16u2 for an Arduino UNO R3, or atmega32u4 for Arduino Micro)
+MCU          = atmega32u4
 ARCH         = AVR8
 F_CPU        = 16000000
 F_USB        = $(F_CPU)
@@ -40,3 +40,13 @@ include $(LUFA_PATH)/Build/lufa_atprogram.mk
 # Target for LED/buzzer to alert when print is done
 with-alert: all
 with-alert: CC_FLAGS += -DALERT_WHEN_DONE
+
+flash: all
+	sudo dfu-programmer $(MCU) erase
+	sudo dfu-programmer $(MCU) flash $(TARGET).hex
+	sudo dfu-programmer $(MCU) reset
+
+restore_uno:
+	sudo dfu-programmer atmega16u2 erase
+	sudo dfu-programmer atmega16u2 flash Arduino-usbserial-uno.hex.hex
+	sudo dfu-programmer atmega16u2 reset
